@@ -1,0 +1,39 @@
+version: '3.9'
+
+x-app-db-environment: &base-app-db-environment
+  POSTGRES_DB: bookshelf_app
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: password
+
+services: # the different images that will be running as containers
+  webapp: # service name
+    # name of the image
+    image: "bookshelf-app"
+  #build the image for the web service from the dockerfile in parent directory.
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # cannot start if db service is not up and running
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+    # file where env variables are stored.
+    env_file:
+      - .env.local
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+  # command directive passes the parameters to the service, and they will be executed by the service.
+    command: /bin/bash -c "python manage.py runserver 0.0.0.0:8000"
+    restart: unless-stopped
+    container_name: bookshelf_app_server
+
+  db:
+    image: "postgres:14.4"
+    container_name: bookshelf_db
+    volumes:
+      - ./db/data:/var/lib/postgresql/data
+    restart: unless-stopped
+    environment: *base-app-db-environment
