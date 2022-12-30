@@ -16,4 +16,4 @@ docker_shell:
 start_db_local:
 	docker compose up -d db
 	echo "Applying migrations..."
-	python manage.py migrate
+#	python manage.py migrate
